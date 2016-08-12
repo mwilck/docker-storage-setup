@@ -373,6 +373,10 @@ get_configured_thin_pool() {
   for opt in $options; do
     if [[ $opt =~ dm.thinpooldev* ]];then
       tpool=${opt#*=}
+      case "$tpool" in
+      /dev/mapper/*) ;;
+      *) tpool="/dev/mapper/$tpool";;
+      esac
       echo "$tpool"
       return 0
     fi
