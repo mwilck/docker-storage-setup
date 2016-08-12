@@ -398,7 +398,7 @@ reset_lvm_thin_pool () {
 }
 
 setup_lvm_thin_pool () {
-  local tpool
+  local tpool lv_name
 
   # Check if a thin pool is already configured in /etc/sysconfig/docker-storage.
   # If yes, wait for that thin pool to come up.
@@ -408,6 +408,12 @@ setup_lvm_thin_pool () {
      Info "Found an already configured thin pool $tpool in ${DOCKER_STORAGE}"
      if ! wait_for_dev "$tpool"; then
        Fatal "Already configured thin pool $tpool is not available. If thin pool exists and is taking longer to activate, set DEVICE_WAIT_TIMEOUT to a higher value and retry. If thin pool does not exist any more, remove ${DOCKER_STORAGE} and retry"
+     fi
+     lv_name=${tpool#/dev/mapper/}
+     lv_name=${lv_name#${VG}-}
+     if [[ -n "$lv_name" && x"$lv_name" != x"$POOL_LV_NAME" ]]; then
+         Info "overriding default Pool name: $lv_name"
+         POOL_LV_NAME=$lv_name
      fi
   fi
 
